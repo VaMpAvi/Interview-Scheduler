@@ -16,16 +16,24 @@ public class SchedulerService {
     @Autowired
     private PositionRepository positionRepository;
 
-    List<Interviewer> getAllInterviewer(){
-        return interviewerRepository.findAll();
-    }
-
-//    List<Position> getAllPosition1(){
-//        return positionRepository.findAll();
-//    }
+    @Autowired
+    private EmailService emailService;
 
     void saveInterviewDetails(Interview interview){
-        interviewRepository.save(interview);
+        Interview savedinterview = interviewRepository.save(interview);
+
+        String subject = "Interview Scheduled: " + savedinterview.getPosition();
+        String bodyCandidate = "Dear Candidate,\n\nYour interview for the position of " + savedinterview.getPosition() +
+                " is scheduled on " + savedinterview.getInterviewDate() + " at " + savedinterview.getInterviewTime() +
+                ".\nLocation/Link/Contact: " + savedinterview.getContact();
+        String bodyInterviewer = "Dear Interviewer,\n\nYou have an interview scheduled with " +
+                savedinterview.getCandidateEmail() + " for the position of " + savedinterview.getPosition() +
+                " on " + savedinterview.getInterviewDate() + " at " + savedinterview.getInterviewTime() +
+                ".\nLocation/Link/Contact: " + savedinterview.getContact();
+
+        emailService.sendEmail(savedinterview.getInterviewerEmail(), subject, bodyInterviewer);
+        emailService.sendEmail(savedinterview.getCandidateEmail(), subject, bodyCandidate);
+
     }
 
     List<String> getAllInterviewerEmails(){
@@ -35,4 +43,5 @@ public class SchedulerService {
     List<String> getAllPosition(){
         return positionRepository.findAllPositons();
     }
+
 }
